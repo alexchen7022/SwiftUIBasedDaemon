@@ -1,5 +1,5 @@
 //
-//  Crypto.swift
+//  CryptoService.swift
 //  SwiftUIBasedDaemon
 //
 //  Created by 涼麵 on 2023/10/20.
@@ -8,30 +8,25 @@
 import Foundation
 import CryptoKit
 
-typealias PKey = SecureEnclave.P256.Signing.PrivateKey
 struct CryptoService{
-    private var privateKey :PKey
+    private var privateKey :SecureEnclave.P256.Signing.PrivateKey
 
-    init(privateKey: PKey) throws{
+    init(privateKey: SecureEnclave.P256.Signing.PrivateKey) throws{
         self.privateKey = privateKey
     }
     
-    init() throws{
-        self.privateKey = try CryptoService.generatePrivateKey()
-    }
-    
-    static func generatePrivateKey() throws -> PKey{
+    static func generatePrivateKey() throws -> SecureEnclave.P256.Signing.PrivateKey{
             let accessControl = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             [.privateKeyUsage], nil)!
             return try SecureEnclave.P256.Signing.PrivateKey(accessControl: accessControl)
     }
-    func getPrivateKey() -> PKey{
+    
+    func getPrivateKey() -> SecureEnclave.P256.Signing.PrivateKey{
         return self.privateKey
     }
     
 
 }
-
 protocol GenericPasswordConvertible: CustomStringConvertible {
     /// Creates a key from a raw representation.
     init<D>(rawRepresentation data: D) throws where D: ContiguousBytes
@@ -40,7 +35,7 @@ protocol GenericPasswordConvertible: CustomStringConvertible {
     var rawRepresentation: Data { get }
 }
 
-extension PKey: GenericPasswordConvertible {
+extension SecureEnclave.P256.Signing.PrivateKey: GenericPasswordConvertible {
     public var description: String {
         return "SecureEnclave.P256.Signing.PrivateKey.GenericPasswordConvertible"
     }
@@ -53,3 +48,5 @@ extension PKey: GenericPasswordConvertible {
         return dataRepresentation  // Contiguous bytes repackaged as a Data instance.
     }
 }
+
+
