@@ -8,43 +8,44 @@
 import Foundation
 import CryptoKit
 
-struct CryptoService{
-    private var privateKey :SecureEnclave.P256.Signing.PrivateKey
+public typealias PKey = SecureEnclave.P256.Signing.PrivateKey
+public struct CryptoService{
+    public  var privateKey :PKey
 
-    init(privateKey: SecureEnclave.P256.Signing.PrivateKey) throws{
+    public init(privateKey: PKey) throws{
         self.privateKey = privateKey
     }
     
-    static func generatePrivateKey() throws -> SecureEnclave.P256.Signing.PrivateKey{
+    public static func generatePrivateKey() throws -> PKey{
             let accessControl = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             [.privateKeyUsage], nil)!
-            return try SecureEnclave.P256.Signing.PrivateKey(accessControl: accessControl)
+            return try PKey(accessControl: accessControl)
     }
     
-    func getPrivateKey() -> SecureEnclave.P256.Signing.PrivateKey{
+    public func getPrivateKey() -> PKey{
         return self.privateKey
     }
     
 
 }
-protocol GenericPasswordConvertible: CustomStringConvertible {
+public protocol GenericPasswordConvertible: CustomStringConvertible {
     /// Creates a key from a raw representation.
-    init<D>(rawRepresentation data: D) throws where D: ContiguousBytes
+    init(rawRepresentation data: ContiguousBytes) throws
     
     /// A raw representation of the key.
     var rawRepresentation: Data { get }
 }
 
 extension SecureEnclave.P256.Signing.PrivateKey: GenericPasswordConvertible {
+    public init(rawRepresentation data: ContiguousBytes) throws {
+        try self.init(dataRepresentation: data.withUnsafeBytes{Data($0)})
+    }
+    
     public var description: String {
         return "SecureEnclave.P256.Signing.PrivateKey.GenericPasswordConvertible"
     }
-    
-    init<D>(rawRepresentation data: D) throws where D: ContiguousBytes {
-        try self.init(dataRepresentation: data.withUnsafeBytes{Data($0)})
-    }
    
-    var rawRepresentation: Data {
+    public var rawRepresentation: Data {
         return dataRepresentation  // Contiguous bytes repackaged as a Data instance.
     }
 }
